@@ -18,6 +18,7 @@ class ExecutorStatus(object):
     NOT_SCHEDULED = 0
     SCHEDULED = 1
     RUNNING_TASK = 2
+    RELEASED = 3
 
 class Executor(object):
     """

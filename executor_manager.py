@@ -52,6 +52,32 @@ class ExecutorManager(object):
                 index += 1
         return None
 
+    def get_available_executor(self):
+        """
+        Get an available executor that could run task
+        :return: executor or None
+        """
+        with self.executor_lock:
+            for executor in self.valid_executors:
+                if executor.status == ExecutorStatus.NOT_SCHEDULED:
+                    executor.status = ExecutorStatus.SCHEDULED
+                    return executor
+        return None
+
+    def get_all_available_executor(self):
+        """
+        Get all available executors that could run task
+        :return: executors or None
+        """
+        pass
+
+    def release_executor(self, executor):
+        """
+        Release executor once there is no task for it
+        :param executor: the executor to be released
+        :return: None
+        """
+        executor.status = ExecutorStatus.RELEASED
 
     def report_executor_status(self):
         """

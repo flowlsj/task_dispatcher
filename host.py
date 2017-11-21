@@ -89,6 +89,7 @@ class Host(Executor):
         :return: None
         """
         self.update_state()
+        print "Enter running task， task: %s" % task.name
 
         if self.state == ExecutorState.READY:
             try:
@@ -96,13 +97,17 @@ class Host(Executor):
                 self.status = ExecutorStatus.RUNNING_TASK
                 self.connection.exec_command(command=task.cmdLine)
 
+                # print "Executed command %s on executor %s" % (task.cmdLine, self.ip_address)
+
+                #TODO: need to think about the error status
+
                 sleep(5)
                 # Wait until the task is finished
-                command_line = "ps -ef | grep \"" + task.cmdLine + "\"" + " | grep -v \"grep\""
+                command_line = "ps -ef | grep \"" + task.cmdLine.strip() + "\"" + " | grep -v \"grep\""
                 (_, std_out, std_err) = self.connection.exec_command(command=command_line)
                 std_out = std_out.readlines()
                 while len(std_out) != 0:
-                    print "Running task %s" % task.cmdLine
+                    print "Running task %s on %s" % (task.cmdLine, self.ip_address)
                     sleep(3)
                     (_, std_out, std_err) = self.connection.exec_command(command=command_line)
                     std_out = std_out.readlines()

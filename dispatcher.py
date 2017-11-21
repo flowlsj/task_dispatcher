@@ -33,6 +33,17 @@ def get_arguments():
 
     return arguments
 
+def executor_run_task(executor, task):
+    """
+    The method to be executed in worker thread
+    :param executor: executor to run task
+    :param task: task to be executed
+    :return: None
+    """
+    print "Start running task %s, on executor %s" %(task.name, executor.ip_address)
+    executor.run_task(task)
+    task_manager.mark_task_as_executed(task)
+
 if __name__=="__main__":
     arguments = get_arguments()
     if arguments is None:
@@ -51,9 +62,17 @@ if __name__=="__main__":
         if executor_manager.has_valid_executor_for_task(task):
             executor = executor_manager.get_executor_for_task(task)
             if executor is not None:
-                executor.run_task(task)
-                task = task_manager.get_next_task()
+                worker_thread = Thread(target=executor_run_task, args=(executor, task))
+                worker_thread.start()
+                # print "Start running task %s, on executor %s" % (task.name, executor.ip_address)
+                # executor.run_task(task)
+                # task_manager.mark_task_as_executed(task)
+            else:
+                # print "Put task [%s] back to task pool" % task.name
+                task_manager.put_back_to_task_pool(task)
+            task = task_manager.get_next_task()
         else:
-            task.status = TaskStatus.CANNOT_BE_EXECUTED
+            print "Mark task [%s] as cannot be executed" % task.name
+            task_manager.mark_task_as_cannot_be_executed(task)
             task = task_manager.get_next_task()
             continue
