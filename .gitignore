@@ -2,7 +2,7 @@
 .idea/*
 
 # Compiled files
-.pyc
+*.pyc
 
 # Private files
 task_list
