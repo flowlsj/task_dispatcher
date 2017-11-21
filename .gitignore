@@ -3,3 +3,6 @@
 
 # Compiled files
 .pyc
+
+# Private files
+task_list
