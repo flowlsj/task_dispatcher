@@ -15,32 +15,32 @@ class HUT_CONFIG(object):
 
     
     NAME_INFO_MAPPING = {
-        'asic01': {
-            'ip_address': '172.16.64.201',
-            'username': 'root',
-            'password': 'abc-123',
-            'ssh_port': 22,
-            'type': HostType.PHYSICAL_HOST,
-            'windows_server': WINDOWS_SERVER_CHENGDU,
-            'pdu_server': PDU_SERVER_CHENGDU_01,
-            'pdu_port': 0x1,
-            'serial_port': 'com41',
-            'hot_plugin_support': True,
-            'for_build': ["private_build", "daily_build", "weekly_build"]
-        },
-        'asic02': {
-            'ip_address': '172.16.64.202',
-            'username': 'root',
-            'password': 'abc-123',
-            'ssh_port': 22,
-            'type': HostType.PHYSICAL_HOST,
-            'windows_server': WINDOWS_SERVER_CHENGDU,
-            'pdu_server': PDU_SERVER_CHENGDU_01,
-            'pdu_port': 0x2,
-            'serial_port': 'com42',
-            'hot_plugin_support': True,
-            'for_build': ["private_build", "daily_build", "weekly_build"]
-        },
+        # 'asic01': {
+        #     'ip_address': '172.16.64.201',
+        #     'username': 'root',
+        #     'password': 'abc-123',
+        #     'ssh_port': 22,
+        #     'type': HostType.PHYSICAL_HOST,
+        #     'windows_server': WINDOWS_SERVER_CHENGDU,
+        #     'pdu_server': PDU_SERVER_CHENGDU_01,
+        #     'pdu_port': 0x1,
+        #     'serial_port': 'com41',
+        #     'hot_plugin_support': True,
+        #     'for_build': ["private_build", "daily_build", "weekly_build"]
+        # },
+        # 'asic02': {
+        #     'ip_address': '172.16.64.202',
+        #     'username': 'root',
+        #     'password': 'abc-123',
+        #     'ssh_port': 22,
+        #     'type': HostType.PHYSICAL_HOST,
+        #     'windows_server': WINDOWS_SERVER_CHENGDU,
+        #     'pdu_server': PDU_SERVER_CHENGDU_01,
+        #     'pdu_port': 0x2,
+        #     'serial_port': 'com42',
+        #     'hot_plugin_support': True,
+        #     'for_build': ["private_build", "daily_build", "weekly_build"]
+        # },
         # 'asic03': {
         #     'ip_address': '172.16.64.203',
         #     'username': 'root',
@@ -93,19 +93,19 @@ class HUT_CONFIG(object):
         #     'hot_plugin_support': False,
         #     'for_build': ["private_build", "daily_build", "weekly_build"]
         # },
-        'asic07': {
-            'ip_address': '172.16.64.207',
-            'username': 'root',
-            'password': 'abc-123',
-            'ssh_port': 22,
-            'type': HostType.PHYSICAL_HOST,
-            'windows_server': WINDOWS_SERVER_CHENGDU,
-            'pdu_server': PDU_SERVER_CHENGDU_02,
-            'pdu_port': 0x8,
-            'serial_port': 'com47',
-            'hot_plugin_support': False,
-            'for_build': ["private_build", "daily_build", "weekly_build"]
-        },
+        # 'asic07': {
+        #     'ip_address': '172.16.64.207',
+        #     'username': 'root',
+        #     'password': 'abc-123',
+        #     'ssh_port': 22,
+        #     'type': HostType.PHYSICAL_HOST,
+        #     'windows_server': WINDOWS_SERVER_CHENGDU,
+        #     'pdu_server': PDU_SERVER_CHENGDU_02,
+        #     'pdu_port': 0x8,
+        #     'serial_port': 'com47',
+        #     'hot_plugin_support': False,
+        #     'for_build': ["private_build", "daily_build", "weekly_build"]
+        # },
         'asic08': {
             'ip_address': '172.16.64.208',
             'username': 'root',

@@ -55,6 +55,8 @@ class Host(Executor):
                                     port=self.ssh_port,
                                     username=self.username,
                                     password=self.password,
+                                    allow_agent=False,
+                                    look_for_keys=False,
                                     timeout=10)
         except Exception as ex:
             print "Connect to host %s failed due to %s" % (self.ip_address, ex.message)
