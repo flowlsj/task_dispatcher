@@ -91,31 +91,33 @@ class Host(Executor):
         :return: None
         """
         self.update_state()
-        print "Enter running task， task: %s" % task.name
 
         if self.state == ExecutorState.READY:
             try:
                 task.status = TaskStatus.RUNNING
                 self.status = ExecutorStatus.RUNNING_TASK
+                print "Start to run task [%s] on executor [%s]" % (task.cmdLine, self.ip_address)
                 self.connection.exec_command(command=task.cmdLine)
-
-                # print "Executed command %s on executor %s" % (task.cmdLine, self.ip_address)
 
                 #TODO: need to think about the error status
 
                 sleep(5)
+                log_printed = False
                 # Wait until the task is finished
                 command_line = "ps -ef | grep \"" + task.cmdLine.strip() + "\"" + " | grep -v \"grep\""
                 (_, std_out, std_err) = self.connection.exec_command(command=command_line)
                 std_out = std_out.readlines()
                 while len(std_out) != 0:
-                    print "Running task %s on %s" % (task.cmdLine, self.ip_address)
+                    if not log_printed:
+                        print "Running task [%s] on executor [%s]" % (task.cmdLine, self.ip_address)
+                        log_printed = True
                     sleep(3)
                     (_, std_out, std_err) = self.connection.exec_command(command=command_line)
                     std_out = std_out.readlines()
             except Exception as ex:
-                print "Run task failed due to %s" % ex.message
+                print "Run task [%s] failed on executor [%s] due to %s" % (task.cmdLine, self.ip_address, ex.message)
             finally:
+                print "Finished running [%s] on executor [%s]" % (task.cmdLine, self.ip_address)
                 task.status = TaskStatus.EXECUTED
                 self.status = ExecutorStatus.NOT_SCHEDULED
                 self.update_state()
