@@ -6,19 +6,21 @@ class ExecutorState(object):
     """
     The class to describe host state
     """
-    READY = 0
-    LOST_CONNECTION = 1
-    CARD_NOT_FOUND = 2
-    UNKNOWN = 3
+    READY = "READY"
+    LOST_CONNECTION = "LOST_CONNECTION"
+    CARD_NOT_FOUND = "CARD_NOT_FOUND"
+    CARD_NO_RESPONSE = "CARD_NO_RESPONSE"
+    MARK_AS_INVALID = "MARK_AS_INVALID"
+    UNKNOWN = "UNKNOWN"
 
 class ExecutorStatus(object):
     """
     The class to describe host status
     """
-    NOT_SCHEDULED = 0
-    SCHEDULED = 1
-    RUNNING_TASK = 2
-    RELEASED = 3
+    NOT_SCHEDULED = "NOT_SCHEDULED"
+    SCHEDULED = "SCHEDULED"
+    RUNNING_TASK = "RUNNING_TASK"
+    RELEASED = "RELEASED"
 
 class Executor(object):
     """

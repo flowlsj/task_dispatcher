@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from threading import Lock
+from time import sleep
 
 from config import HUT_CONFIG
 from executor import ExecutorGenerator, ExecutorStatus, ExecutorState
@@ -98,7 +99,7 @@ class ExecutorManager(object):
     def add_invalid_executor(self, executor):
         self.invalid_executors.append(executor)
 
-    def load_executors(self, build_type=None):
+    def load_executors(self, build_type=None, build_number=None):
         """
         Load all executors from config file
         :param build_type: the build type that executors work for
@@ -111,6 +112,36 @@ class ExecutorManager(object):
 
             executor_instance = ExecutorGenerator.generate_executor(**executors[executor])
             if executor_instance.state == ExecutorState.READY:
-                self.add_valid_executor(executor_instance)
+                if executor_instance.is_for_build(build_type + "_" + str(build_number)):
+                    self.add_valid_executor(executor_instance)
+                else:
+                    executor_instance.state = ExecutorState.MARK_AS_INVALID
+                    self.add_invalid_executor(executor_instance)
             else:
                 self.add_invalid_executor(executor_instance)
+
+    def dump_executor_state(self, dump_file):
+        """
+        Dump current executor state
+        :param dump_file: where to dump
+        :return: None
+        """
+        dump_file = open(dump_file, "w+")
+        with dump_file:
+            for executor in self.invalid_executors + self.valid_executors:
+                dump_file.write("Executor ip address: [%s], state: [%16s], driver: [%s]\n" %
+                                (executor.ip_address, executor.state, executor.driver))
+
+    def wait_for_executor_finish_task(self):
+        """
+        Wait for all executors finish their running task
+        :return: None
+        """
+        has_task_running = True
+        while has_task_running:
+            has_task_running = False
+            for executor in self.valid_executors:
+                if executor.status == ExecutorStatus.RUNNING_TASK:
+                    has_task_running = True
+                    sleep(15)
+                    break

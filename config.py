@@ -126,7 +126,7 @@ class HUT_CONFIG(object):
             'ssh_port': 22,
             'type': HostType.PHYSICAL_HOST,
             'windows_server': WINDOWS_SERVER_CHENGDU,
-            'pdu_server': PDU_SERVER_CHENGDU_02,
+            'pdu_server': PDU_SERVER_CHENGDU_03,
             'pdu_port': 0x20,
             'serial_port': 'com49',
             'hot_plugin_support': False,

@@ -1,12 +1,14 @@
 # -*- coding:utf-8 -*-
 
+import os
 from time import sleep
 from threading import Thread
 from optparse import OptionParser
 
 from executor_manager import ExecutorManager
 from task_manager import TaskManager
-from task import TaskStatus
+
+EXECUTOR_STATE_FILE = "executor_state.txt"
 
 def get_arguments():
     """
@@ -20,6 +22,11 @@ def get_arguments():
                        dest='build_type',
                        type=str,
                        help='The build type, it will determine which executors will be used to execute tasks')
+
+        opt.add_option('--build_number',
+                       dest='build_number',
+                       type=str,
+                       help='The build number')
 
         opt.add_option('--task_list_file',
                        dest='task_list_file',
@@ -40,7 +47,6 @@ def executor_run_task(executor, task):
     :param task: task to be executed
     :return: None
     """
-    print "Start running task %s, on executor %s" %(task.name, executor.ip_address)
     executor.run_task(task)
     task_manager.mark_task_as_executed(task)
 
@@ -48,10 +54,10 @@ if __name__=="__main__":
     arguments = get_arguments()
     if arguments is None:
         print """
-        Usage: python dispatcher.py --build_type=<build_type> --task_list=<task_list_file>
+        Usage: python dispatcher.py --build_type=<build_type> --build_number=<build_number> --task_list=<task_list_file>
         """
     executor_manager = ExecutorManager()
-    executor_manager.load_executors(build_type=arguments.build_type)
+    executor_manager.load_executors(build_type=arguments.build_type, build_number=arguments.build_number)
 
     task_manager = TaskManager()
     task_manager.load_tasks(task_file=arguments.task_list_file)
@@ -76,3 +82,12 @@ if __name__=="__main__":
             task_manager.mark_task_as_cannot_be_executed(task)
             task = task_manager.get_next_task()
             continue
+
+    print "All tasks have been distributed, waitting for task running finish"
+    executor_manager.wait_for_executor_finish_task()
+    print "All tasks finished running"
+
+    print "Start dumping executor status"
+    log_dir = arguments.task_list_file[:arguments.task_list_file.rfind("/") + 1]
+    executor_log_file = log_dir + EXECUTOR_STATE_FILE
+    executor_manager.dump_executor_state(executor_log_file)
