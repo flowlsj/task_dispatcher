@@ -90,40 +90,65 @@ class Host(Executor):
         """
         Run task by execute the task command line on host
         :param task: the task to be executed
-        :return: None
+        :return: True if task started successfully, False if not
         """
         self.update_state()
         task_command_line = task.cmdLine.strip()
 
-        if self.state == ExecutorState.READY:
+        if self.state != ExecutorState.READY:
+            return False
+
+        retry_count = 5
+        print "Try to start task [%s] on executor [%s]" % (task_command_line, self.ip_address)
+        task_started = False
+        while not task_started and retry_count > 0:
             try:
-                task.status = TaskStatus.RUNNING
-                self.status = ExecutorStatus.RUNNING_TASK
-                print "Start to run task [%s] on executor [%s]" % (task_command_line, self.ip_address)
-                self.connection.exec_command(command=task.cmdLine, timeout=30)
-
-                #TODO: need to think about the error status
-
-                sleep(5)
-                log_printed = False
-                # Wait until the task is finished
-                command_line = "ps -ef | grep \"" + task_command_line + "\"" + " | grep -v \"grep\""
-                (_, std_out, std_err) = self.connection.exec_command(command=command_line, timeout=30)
-                std_out = std_out.readlines()
-                while len(std_out) != 0:
-                    if not log_printed:
-                        print "Running task [%s] on executor [%s]" % (task_command_line, self.ip_address)
-                        log_printed = True
-                    sleep(3)
-                    (_, std_out, std_err) = self.connection.exec_command(command=command_line, timeout=30)
-                    std_out = std_out.readlines()
+                self.connection.exec_command(command="nohup " + task.cmdLine + " &", timeout=30)
             except Exception as ex:
-                print "Run task [%s] failed on executor [%s] due to %s" % (task_command_line, self.ip_address, ex.message)
-            finally:
-                print "Finished running [%s] on executor [%s]" % (task_command_line, self.ip_address)
-                task.status = TaskStatus.EXECUTED
-                self.status = ExecutorStatus.NOT_SCHEDULED
-                self.update_state()
+                print "Start task failed [%s] on %s due to %s, retry after 30 seconds later" %\
+                      (task_command_line, self.ip_address, ex.message)
+                retry_count -= 1
+                sleep(30)
+            else:
+                task_started = True
+
+        if task_started:
+            task.status = TaskStatus.RUNNING
+            self.status = ExecutorStatus.RUNNING_TASK
+        else:
+            task.status = TaskStatus.NOT_SCHEDULED
+            self.status = ExecutorStatus.NOT_SCHEDULED
+            return False
+
+        task_finished = False
+        retry_count = 10
+        check_command_line = "ps -ef | grep \"" + task_command_line + "\"" + " | grep -v \"grep\""
+        log_printed = False
+        while not task_finished and retry_count > 0:
+            # Wait until the task is finished
+            if not log_printed:
+                print "Running task [%s] on executor [%s]" % (task_command_line, self.ip_address)
+                log_printed = True
+            try:
+                (_, std_out, std_err) = self.connection.exec_command(command=check_command_line, timeout=30)
+                std_out = std_out.readlines()
+                if len(std_out) == 0:
+                    task_finished = True
+            except Exception as ex:
+                print "Check status of task [%s] failed on executor [%s] due to %s, retrying..." % \
+                      (task_command_line, self.ip_address, ex.message)
+                retry_count -= 1
+                sleep(30)
+        if task_finished:
+            print "Finished running [%s] on executor [%s]" % (task_command_line, self.ip_address)
+            self.status = ExecutorStatus.NOT_SCHEDULED
+        else:
+            print "Cannot get status of task [%s] on executor [%s], mark task as executed and release this executor" %\
+                  (task_command_line, self.ip_address)
+            self.status = ExecutorStatus.RELEASED
+        task.status = TaskStatus.EXECUTED
+        self.update_state()
+        return True
 
 
     def update_state(self):
@@ -135,11 +160,16 @@ class Host(Executor):
             return
 
         # To check if the host could detect nvme device
-        (_, driver_stdout, driver_stderr) = self.connection.exec_command("ls /dev | grep nvme")
+        try:
+            (_, driver_stdout, driver_stderr) = self.connection.exec_command("ls /dev | grep nvme")
 
-        driver_stderr = driver_stderr.readlines()
-        if len(driver_stderr) != 0:
-            self.state = ExecutorState.UNKNOWN
+            driver_stderr = driver_stderr.readlines()
+            if len(driver_stderr) != 0:
+                self.state = ExecutorState.UNKNOWN
+                return
+        except Exception as ex:
+            print "Execute command on [%s] failed, mark it as LOST CONNECTION" % self.ip_address
+            self.state = ExecutorState.LOST_CONNECTION
             return
 
         driver_stdout = driver_stdout.readlines()
@@ -148,7 +178,7 @@ class Host(Executor):
         else:
             # Check if there is enable/disable failure
             (_, dmesg_stdout, dmesg_stderr) = \
-                self.connection.exec_command("cat /var/log/messages | grep \"Disabling ctrlr failed\"")
+                self.connection.exec_command("dmesg | grep \"Disabling ctrlr failed\"")
             dmesg_stderr = dmesg_stderr.readlines()
             if len(dmesg_stderr) != 0:
                 self.state = ExecutorState.UNKNOWN

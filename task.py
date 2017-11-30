@@ -26,7 +26,7 @@ class Task(object):
         :param cmdLine:  the command line of the task, currently, task can be only executed from shell command line
         """
         # self.cmdLine = cmdLine.strip()
-        self.cmdLine = cmdLine
+        self.cmdLine = cmdLine.strip()
         # TODO: need to revisit here for a better method to detect os path separator
         self.name = self.cmdLine.split(".")[0].split('/')[-1]
         if self.name.startswith("p_"):

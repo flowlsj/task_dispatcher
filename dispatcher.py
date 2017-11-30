@@ -10,6 +10,9 @@ from task_manager import TaskManager
 
 EXECUTOR_STATE_FILE = "executor_state.txt"
 
+task_manager = None
+executor_manager = None
+
 def get_arguments():
     """
     Parse command line arguments
@@ -47,8 +50,12 @@ def executor_run_task(executor, task):
     :param task: task to be executed
     :return: None
     """
-    executor.run_task(task)
-    task_manager.mark_task_as_executed(task)
+    global task_manager
+    global executor_manager
+    if executor.run_task(task):
+        task_manager.mark_task_as_executed(task)
+    else:
+        task_manager.put_back_to_task_pool(task)
 
 if __name__=="__main__":
     arguments = get_arguments()
@@ -70,9 +77,6 @@ if __name__=="__main__":
             if executor is not None:
                 worker_thread = Thread(target=executor_run_task, args=(executor, task))
                 worker_thread.start()
-                # print "Start running task %s, on executor %s" % (task.name, executor.ip_address)
-                # executor.run_task(task)
-                # task_manager.mark_task_as_executed(task)
             else:
                 # print "Put task [%s] back to task pool" % task.name
                 task_manager.put_back_to_task_pool(task)

@@ -76,6 +76,7 @@ class TaskManager(object):
         :param task: the task has been executed
         :return: None
         """
+        task.status = TaskStatus.EXECUTED
         with self.task_list_executed_lock:
             self.task_list_executed.append(task)
 
