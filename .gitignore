@@ -6,3 +6,5 @@
 
 # Private files
 task_list
+config.py
+wait_job_finish.py
